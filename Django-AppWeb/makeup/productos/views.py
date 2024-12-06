@@ -98,9 +98,72 @@ def eliminar_usuario(request, id):
         return redirect('lista_usuarios')
     return render(request, 'templates/eliminar_usuario.html', {'usuario': usuario})
     """
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Product, usuario
+from .forms import ProductoForm
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+
+
 def rimel(request):
     return render(request,'productos/rimel.html')
 
 def inicio(request):
     return render(request,'productos/index.html')
+
+@login_required
+def index(request):
+    return render(request, 'productos/index.html')
+
+@login_required
+def agregar_producto(request): 
+    if request.method == 'POST':
+        form= ProductoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('productos/index')
+    else:
+        form = ProductoForm()
+
+    return render(request, 'productos/agregar_producto.html', {'form': form})
+
+# views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Product
+from .forms import ProductoForm
+
+# Mostrar lista de productos
+def lista_productos(request):
+    productos = Product.objects.all()
+    return render(request, 'productos/lista_productos.html', {'productos': productos})
+
+# Crear un nuevo producto
+def crear_producto(request):
+    if request.method == 'POST':
+        form = ProductoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('lista_productos')
+    else:
+        form = ProductoForm()
+    return render(request, 'productos/crear_producto.html', {'form': form})
+
+# Editar un producto
+def editar_producto(request, id):
+    producto = get_object_or_404(Product, id=id)
+    if request.method == 'POST':
+        form = ProductoForm(request.POST, instance=producto)
+        if form.is_valid():
+            form.save()
+            return redirect('lista_productos')
+    else:
+        form = ProductoForm(instance=producto)
+    return render(request, 'productos/editar_producto.html', {'form': form})
+
+# Eliminar un producto
+def eliminar_producto(request, id):
+    producto = get_object_or_404(Product, id=id)
+    if request.method == 'POST':
+        producto.delete()
+        return redirect('lista_productos')
+    return render(request, 'productos/eliminar_producto.html', {'producto': producto})
